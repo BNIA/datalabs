@@ -1,0 +1,9 @@
+{
+  "datalabs": {
+    "Overview": "/",
+    "Github": "github.html",
+    "Python and Colab": "colabs.html",
+    "Scooter Exploration": "scooterExploration.html",
+    "Nbdev": "nbdev.html"
+  }
+}

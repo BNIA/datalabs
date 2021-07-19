@@ -1,0 +1,319 @@
+<p>This actually turned out to be rather straight forward</p>
+import requests
+from bs4 import BeautifulSoup as bs
+from wordcloud import WordCloud, STOPWORDS 
+from PIL import Image #use to open the image
+import matplotlib.pyplot as plt
+import numpy as np
+import os 
+%matplotlib inline<p>A library exists to do what we want</p>
+from wordcloud import ImageColorGenerator<p>So we just get some text</p>
+words =""
+bs = bs(requests.get('http://www.myths.com/pub/lyrics/Bangles_.html').text, 'html.parser')
+for x in bs.find_all("pre"): words = words+x.text
+words = words.replace("\n", " ").lower() words" all the old paintings on the tombs they do the sand dance don't you know if they move too quick (oh whey oh) they're falling down like a domino  all the bazaar men by the nile they got the money on a bet gold crocodiles (oh whey oh) they snap their teeth on your cigarette  foreign types with the hookah pipes say ay oh whey oh, ay oh whey oh walk like an egyptian  the blonde waitresses take their trays they spin around and they cross the floor they've got the moves (oh whey oh) you drop your drink then they bring you more  all the school kids so sick of books they like the punk and the metal band when the buzzer rings (oh whey oh) they're walking like an egyptian  all the kids in the marketplace say ay oh whey oh, ay oh whey oh walk like an egyptian  slide your feet up the street bend your back shift your arm then you pull it back life is hard you know (oh whey oh) so strike a pose on a cadillac  if you want to find all the cops they're hanging out in the donut shop they sing and dance (oh whey oh) spin the clubs cruise down the block  all the japanese with their yen the party boys call the kremlin and the chinese know (oh whey oh) they walk the line like egyptian  all the cops in the doughnut shop say ay oh whey oh, ay oh whey oh walk like an egyptian walk like an egyptian   six o'clock already i was just in the middle of a dream i was kissin' valentino by a crystal blue italian stream but i can't be late 'cause then i guess i just won't get paid these are the days when you wish your bed was already made  it's just another manic monday i wish it was sunday 'cause that's my funday my i don't have to runday it's just another manic monday  have to catch an early train got to be to work by nine and if i had an air-o-plane i still couldn't make it on time 'cause it takes me so long just to figure out what i'm gonna wear blame it on the train but the boss is already there  all of the nights why did my lover have to pick last night to get down doesn't it matter that i have to feed the both of us employment's down he tells me in his bedroom voice c'mon honey, let's go make some noise time it goes so fast when you're having fun   close your eyes, give me your hand, darling do you feel my heart beating do you understand do you feel the same am i only dreaming is this burning an eternal flame  i believe it's meant to be, darling i watch you when you are sleeping you belong with me do you feel the same am i only dreaming or is this burning an eternal flame  say my name sun shines through the rain a whole life so lonely and then you come and ease the pain i don't want to lose this feeling "<p>Get an image and font face</p>
+fontpath = os.path.join('EastSeaDokdo-Regular.ttf') !wget 'https://images-na.ssl-images-amazon.com/images/I/510VP5aoo%2BL._AC_SL1402_.jpg' 'test.jpg'<p>https://fonts.google.com/specimen/East+Sea+Dokdo#standard-styles</p>
+<p>Lets createa visualization function to do everything we could possibly want</p>
+def show(img, s1, s2):
+    plt.figure(figsize=(s1,s2))
+    plt.clf() # Clear Figure
+    plt.imshow(img, interpolation='bilinear')
+    plt.axis('off')
+    plt.show()
+    #fig.set_figwidth(14) # set width
+    #fig.set_figheight(12) # set height <p>create an array mask of the image</p>
+img = Image.open('510VP5aoo+L._AC_SL1402_.jpg')
+mask = np.array(img)<p>and.... GO!</p>
+cloud = WordCloud(stopwords=STOPWORDS, background_color='white', font_path=fontpath, max_words=300, width=300, height=200 ).generate(words)
+show(cloud, 4, 4)show(img, 4, 4)cloud = WordCloud(mask= mask, stopwords=STOPWORDS, background_color='white', max_words=300, width=300, height=200 ).generate(words)
+show(cloud, 4, 4)<Figure size 288x288 with 1 Axes># max_font_size=1000
+# font_path=fontpath,
+color_mask = ImageColorGenerator(mask)
+coloredMaskCloud = cloud.recolor(color_func=color_mask)
+show(coloredMaskCloud, 4, 4)<p>Animating the SVG would be cool. But tricky. Animate the words within the svg?</p>
+<p>Maybe next time.</p>
+<p>For now, here are some miscellaneous notes on how to read files and do stuff with em. Like removing stop words.</p>
+exClean = """
+ds_2_words= ds_2.split()
+print('Length before removing the stopwords: ', len(ds_2_words))
+for word in ds_2_words:
+    if word in ENGLISH_STOP_WORDS:
+        ds_2_words.remove(word)
+    else:
+        pass
+    
+print('Length after removing the stopwords: ', len(ds_2_words))
+"""exeList = """
+values = df['Client'].value_counts().keys().tolist()
+counts = df['Client'].value_counts().tolist()
+"""exeRead = """
+with open('word.txt', 'r') as f: #Read the data or words
+    word_text= f.read()
+words= word_text.split(',') #preprocessing before using in WordCloud module
+cloud= WordCloud().generate_from_text(' '.join(words))
+"""<p>This actually turned out to be rather straight forward</p>
+import requests
+from bs4 import BeautifulSoup as bs
+from wordcloud import WordCloud, STOPWORDS 
+from PIL import Image #use to open the image
+import matplotlib.pyplot as plt
+import numpy as np
+import os 
+%matplotlib inline<p>A library exists to do what we want</p>
+from wordcloud import ImageColorGenerator<p>So we just get some text</p>
+words =""
+bs = bs(requests.get('http://www.myths.com/pub/lyrics/Bangles_.html').text, 'html.parser')
+for x in bs.find_all("pre"): words = words+x.text
+words = words.replace("\n", " ").lower() words" all the old paintings on the tombs they do the sand dance don't you know if they move too quick (oh whey oh) they're falling down like a domino  all the bazaar men by the nile they got the money on a bet gold crocodiles (oh whey oh) they snap their teeth on your cigarette  foreign types with the hookah pipes say ay oh whey oh, ay oh whey oh walk like an egyptian  the blonde waitresses take their trays they spin around and they cross the floor they've got the moves (oh whey oh) you drop your drink then they bring you more  all the school kids so sick of books they like the punk and the metal band when the buzzer rings (oh whey oh) they're walking like an egyptian  all the kids in the marketplace say ay oh whey oh, ay oh whey oh walk like an egyptian  slide your feet up the street bend your back shift your arm then you pull it back life is hard you know (oh whey oh) so strike a pose on a cadillac  if you want to find all the cops they're hanging out in the donut shop they sing and dance (oh whey oh) spin the clubs cruise down the block  all the japanese with their yen the party boys call the kremlin and the chinese know (oh whey oh) they walk the line like egyptian  all the cops in the doughnut shop say ay oh whey oh, ay oh whey oh walk like an egyptian walk like an egyptian   six o'clock already i was just in the middle of a dream i was kissin' valentino by a crystal blue italian stream but i can't be late 'cause then i guess i just won't get paid these are the days when you wish your bed was already made  it's just another manic monday i wish it was sunday 'cause that's my funday my i don't have to runday it's just another manic monday  have to catch an early train got to be to work by nine and if i had an air-o-plane i still couldn't make it on time 'cause it takes me so long just to figure out what i'm gonna wear blame it on the train but the boss is already there  all of the nights why did my lover have to pick last night to get down doesn't it matter that i have to feed the both of us employment's down he tells me in his bedroom voice c'mon honey, let's go make some noise time it goes so fast when you're having fun   close your eyes, give me your hand, darling do you feel my heart beating do you understand do you feel the same am i only dreaming is this burning an eternal flame  i believe it's meant to be, darling i watch you when you are sleeping you belong with me do you feel the same am i only dreaming or is this burning an eternal flame  say my name sun shines through the rain a whole life so lonely and then you come and ease the pain i don't want to lose this feeling "<p>Get an image and font face</p>
+fontpath = os.path.join('EastSeaDokdo-Regular.ttf') !wget 'https://images-na.ssl-images-amazon.com/images/I/510VP5aoo%2BL._AC_SL1402_.jpg' 'test.jpg'<p>https://fonts.google.com/specimen/East+Sea+Dokdo#standard-styles</p>
+<p>Lets createa visualization function to do everything we could possibly want</p>
+def show(img, s1, s2):
+    plt.figure(figsize=(s1,s2))
+    plt.clf() # Clear Figure
+    plt.imshow(img, interpolation='bilinear')
+    plt.axis('off')
+    plt.show()
+    #fig.set_figwidth(14) # set width
+    #fig.set_figheight(12) # set height <p>create an array mask of the image</p>
+img = Image.open('510VP5aoo+L._AC_SL1402_.jpg')
+mask = np.array(img)<p>and.... GO!</p>
+cloud = WordCloud(stopwords=STOPWORDS, background_color='white', font_path=fontpath, max_words=300, width=300, height=200 ).generate(words)
+show(cloud, 4, 4)show(img, 4, 4)cloud = WordCloud(mask= mask, stopwords=STOPWORDS, background_color='white', max_words=300, width=300, height=200 ).generate(words)
+show(cloud, 4, 4)<Figure size 288x288 with 1 Axes># max_font_size=1000
+# font_path=fontpath,
+color_mask = ImageColorGenerator(mask)
+coloredMaskCloud = cloud.recolor(color_func=color_mask)
+show(coloredMaskCloud, 4, 4)<p>Animating the SVG would be cool. But tricky. Animate the words within the svg?</p>
+<p>Maybe next time.</p>
+<p>For now, here are some miscellaneous notes on how to read files and do stuff with em. Like removing stop words.</p>
+exClean = """
+ds_2_words= ds_2.split()
+print('Length before removing the stopwords: ', len(ds_2_words))
+for word in ds_2_words:
+    if word in ENGLISH_STOP_WORDS:
+        ds_2_words.remove(word)
+    else:
+        pass
+    
+print('Length after removing the stopwords: ', len(ds_2_words))
+"""exeList = """
+values = df['Client'].value_counts().keys().tolist()
+counts = df['Client'].value_counts().tolist()
+"""exeRead = """
+with open('word.txt', 'r') as f: #Read the data or words
+    word_text= f.read()
+words= word_text.split(',') #preprocessing before using in WordCloud module
+cloud= WordCloud().generate_from_text(' '.join(words))
+"""<p>This actually turned out to be rather straight forward</p>
+import requests
+from bs4 import BeautifulSoup as bs
+from wordcloud import WordCloud, STOPWORDS 
+from PIL import Image #use to open the image
+import matplotlib.pyplot as plt
+import numpy as np
+import os 
+%matplotlib inline<p>A library exists to do what we want</p>
+from wordcloud import ImageColorGenerator<p>So we just get some text</p>
+words =""
+bs = bs(requests.get('http://www.myths.com/pub/lyrics/Bangles_.html').text, 'html.parser')
+for x in bs.find_all("pre"): words = words+x.text
+words = words.replace("\n", " ").lower() words" all the old paintings on the tombs they do the sand dance don't you know if they move too quick (oh whey oh) they're falling down like a domino  all the bazaar men by the nile they got the money on a bet gold crocodiles (oh whey oh) they snap their teeth on your cigarette  foreign types with the hookah pipes say ay oh whey oh, ay oh whey oh walk like an egyptian  the blonde waitresses take their trays they spin around and they cross the floor they've got the moves (oh whey oh) you drop your drink then they bring you more  all the school kids so sick of books they like the punk and the metal band when the buzzer rings (oh whey oh) they're walking like an egyptian  all the kids in the marketplace say ay oh whey oh, ay oh whey oh walk like an egyptian  slide your feet up the street bend your back shift your arm then you pull it back life is hard you know (oh whey oh) so strike a pose on a cadillac  if you want to find all the cops they're hanging out in the donut shop they sing and dance (oh whey oh) spin the clubs cruise down the block  all the japanese with their yen the party boys call the kremlin and the chinese know (oh whey oh) they walk the line like egyptian  all the cops in the doughnut shop say ay oh whey oh, ay oh whey oh walk like an egyptian walk like an egyptian   six o'clock already i was just in the middle of a dream i was kissin' valentino by a crystal blue italian stream but i can't be late 'cause then i guess i just won't get paid these are the days when you wish your bed was already made  it's just another manic monday i wish it was sunday 'cause that's my funday my i don't have to runday it's just another manic monday  have to catch an early train got to be to work by nine and if i had an air-o-plane i still couldn't make it on time 'cause it takes me so long just to figure out what i'm gonna wear blame it on the train but the boss is already there  all of the nights why did my lover have to pick last night to get down doesn't it matter that i have to feed the both of us employment's down he tells me in his bedroom voice c'mon honey, let's go make some noise time it goes so fast when you're having fun   close your eyes, give me your hand, darling do you feel my heart beating do you understand do you feel the same am i only dreaming is this burning an eternal flame  i believe it's meant to be, darling i watch you when you are sleeping you belong with me do you feel the same am i only dreaming or is this burning an eternal flame  say my name sun shines through the rain a whole life so lonely and then you come and ease the pain i don't want to lose this feeling "<p>Get an image and font face</p>
+fontpath = os.path.join('EastSeaDokdo-Regular.ttf') !wget 'https://images-na.ssl-images-amazon.com/images/I/510VP5aoo%2BL._AC_SL1402_.jpg' 'test.jpg'<p>https://fonts.google.com/specimen/East+Sea+Dokdo#standard-styles</p>
+<p>Lets createa visualization function to do everything we could possibly want</p>
+def show(img, s1, s2):
+    plt.figure(figsize=(s1,s2))
+    plt.clf() # Clear Figure
+    plt.imshow(img, interpolation='bilinear')
+    plt.axis('off')
+    plt.show()
+    #fig.set_figwidth(14) # set width
+    #fig.set_figheight(12) # set height <p>create an array mask of the image</p>
+img = Image.open('510VP5aoo+L._AC_SL1402_.jpg')
+mask = np.array(img)<p>and.... GO!</p>
+cloud = WordCloud(stopwords=STOPWORDS, background_color='white', font_path=fontpath, max_words=300, width=300, height=200 ).generate(words)
+show(cloud, 4, 4)show(img, 4, 4)cloud = WordCloud(mask= mask, stopwords=STOPWORDS, background_color='white', max_words=300, width=300, height=200 ).generate(words)
+show(cloud, 4, 4)<Figure size 288x288 with 1 Axes># max_font_size=1000
+# font_path=fontpath,
+color_mask = ImageColorGenerator(mask)
+coloredMaskCloud = cloud.recolor(color_func=color_mask)
+show(coloredMaskCloud, 4, 4)<p>Animating the SVG would be cool. But tricky. Animate the words within the svg?</p>
+<p>Maybe next time.</p>
+<p>For now, here are some miscellaneous notes on how to read files and do stuff with em. Like removing stop words.</p>
+exClean = """
+ds_2_words= ds_2.split()
+print('Length before removing the stopwords: ', len(ds_2_words))
+for word in ds_2_words:
+    if word in ENGLISH_STOP_WORDS:
+        ds_2_words.remove(word)
+    else:
+        pass
+    
+print('Length after removing the stopwords: ', len(ds_2_words))
+"""exeList = """
+values = df['Client'].value_counts().keys().tolist()
+counts = df['Client'].value_counts().tolist()
+"""exeRead = """
+with open('word.txt', 'r') as f: #Read the data or words
+    word_text= f.read()
+words= word_text.split(',') #preprocessing before using in WordCloud module
+cloud= WordCloud().generate_from_text(' '.join(words))
+"""<p>This actually turned out to be rather straight forward</p>
+import requests
+from bs4 import BeautifulSoup as bs
+from wordcloud import WordCloud, STOPWORDS 
+from PIL import Image #use to open the image
+import matplotlib.pyplot as plt
+import numpy as np
+import os 
+%matplotlib inline<p>A library exists to do what we want</p>
+from wordcloud import ImageColorGenerator<p>So we just get some text</p>
+words =""
+bs = bs(requests.get('http://www.myths.com/pub/lyrics/Bangles_.html').text, 'html.parser')
+for x in bs.find_all("pre"): words = words+x.text
+words = words.replace("\n", " ").lower() words" all the old paintings on the tombs they do the sand dance don't you know if they move too quick (oh whey oh) they're falling down like a domino  all the bazaar men by the nile they got the money on a bet gold crocodiles (oh whey oh) they snap their teeth on your cigarette  foreign types with the hookah pipes say ay oh whey oh, ay oh whey oh walk like an egyptian  the blonde waitresses take their trays they spin around and they cross the floor they've got the moves (oh whey oh) you drop your drink then they bring you more  all the school kids so sick of books they like the punk and the metal band when the buzzer rings (oh whey oh) they're walking like an egyptian  all the kids in the marketplace say ay oh whey oh, ay oh whey oh walk like an egyptian  slide your feet up the street bend your back shift your arm then you pull it back life is hard you know (oh whey oh) so strike a pose on a cadillac  if you want to find all the cops they're hanging out in the donut shop they sing and dance (oh whey oh) spin the clubs cruise down the block  all the japanese with their yen the party boys call the kremlin and the chinese know (oh whey oh) they walk the line like egyptian  all the cops in the doughnut shop say ay oh whey oh, ay oh whey oh walk like an egyptian walk like an egyptian   six o'clock already i was just in the middle of a dream i was kissin' valentino by a crystal blue italian stream but i can't be late 'cause then i guess i just won't get paid these are the days when you wish your bed was already made  it's just another manic monday i wish it was sunday 'cause that's my funday my i don't have to runday it's just another manic monday  have to catch an early train got to be to work by nine and if i had an air-o-plane i still couldn't make it on time 'cause it takes me so long just to figure out what i'm gonna wear blame it on the train but the boss is already there  all of the nights why did my lover have to pick last night to get down doesn't it matter that i have to feed the both of us employment's down he tells me in his bedroom voice c'mon honey, let's go make some noise time it goes so fast when you're having fun   close your eyes, give me your hand, darling do you feel my heart beating do you understand do you feel the same am i only dreaming is this burning an eternal flame  i believe it's meant to be, darling i watch you when you are sleeping you belong with me do you feel the same am i only dreaming or is this burning an eternal flame  say my name sun shines through the rain a whole life so lonely and then you come and ease the pain i don't want to lose this feeling "<p>Get an image and font face</p>
+fontpath = os.path.join('EastSeaDokdo-Regular.ttf') !wget 'https://images-na.ssl-images-amazon.com/images/I/510VP5aoo%2BL._AC_SL1402_.jpg' 'test.jpg'<p>https://fonts.google.com/specimen/East+Sea+Dokdo#standard-styles</p>
+<p>Lets createa visualization function to do everything we could possibly want</p>
+def show(img, s1, s2):
+    plt.figure(figsize=(s1,s2))
+    plt.clf() # Clear Figure
+    plt.imshow(img, interpolation='bilinear')
+    plt.axis('off')
+    plt.show()
+    #fig.set_figwidth(14) # set width
+    #fig.set_figheight(12) # set height <p>create an array mask of the image</p>
+img = Image.open('510VP5aoo+L._AC_SL1402_.jpg')
+mask = np.array(img)<p>and.... GO!</p>
+cloud = WordCloud(stopwords=STOPWORDS, background_color='white', font_path=fontpath, max_words=300, width=300, height=200 ).generate(words)
+show(cloud, 4, 4)show(img, 4, 4)cloud = WordCloud(mask= mask, stopwords=STOPWORDS, background_color='white', max_words=300, width=300, height=200 ).generate(words)
+show(cloud, 4, 4)<Figure size 288x288 with 1 Axes># max_font_size=1000
+# font_path=fontpath,
+color_mask = ImageColorGenerator(mask)
+coloredMaskCloud = cloud.recolor(color_func=color_mask)
+show(coloredMaskCloud, 4, 4)<p>Animating the SVG would be cool. But tricky. Animate the words within the svg?</p>
+<p>Maybe next time.</p>
+<p>For now, here are some miscellaneous notes on how to read files and do stuff with em. Like removing stop words.</p>
+exClean = """
+ds_2_words= ds_2.split()
+print('Length before removing the stopwords: ', len(ds_2_words))
+for word in ds_2_words:
+    if word in ENGLISH_STOP_WORDS:
+        ds_2_words.remove(word)
+    else:
+        pass
+    
+print('Length after removing the stopwords: ', len(ds_2_words))
+"""exeList = """
+values = df['Client'].value_counts().keys().tolist()
+counts = df['Client'].value_counts().tolist()
+"""exeRead = """
+with open('word.txt', 'r') as f: #Read the data or words
+    word_text= f.read()
+words= word_text.split(',') #preprocessing before using in WordCloud module
+cloud= WordCloud().generate_from_text(' '.join(words))
+"""<p>This actually turned out to be rather straight forward</p>
+import requests
+from bs4 import BeautifulSoup as bs
+from wordcloud import WordCloud, STOPWORDS 
+from PIL import Image #use to open the image
+import matplotlib.pyplot as plt
+import numpy as np
+import os 
+%matplotlib inline<p>A library exists to do what we want</p>
+from wordcloud import ImageColorGenerator<p>So we just get some text</p>
+words =""
+bs = bs(requests.get('http://www.myths.com/pub/lyrics/Bangles_.html').text, 'html.parser')
+for x in bs.find_all("pre"): words = words+x.text
+words = words.replace("\n", " ").lower() words" all the old paintings on the tombs they do the sand dance don't you know if they move too quick (oh whey oh) they're falling down like a domino  all the bazaar men by the nile they got the money on a bet gold crocodiles (oh whey oh) they snap their teeth on your cigarette  foreign types with the hookah pipes say ay oh whey oh, ay oh whey oh walk like an egyptian  the blonde waitresses take their trays they spin around and they cross the floor they've got the moves (oh whey oh) you drop your drink then they bring you more  all the school kids so sick of books they like the punk and the metal band when the buzzer rings (oh whey oh) they're walking like an egyptian  all the kids in the marketplace say ay oh whey oh, ay oh whey oh walk like an egyptian  slide your feet up the street bend your back shift your arm then you pull it back life is hard you know (oh whey oh) so strike a pose on a cadillac  if you want to find all the cops they're hanging out in the donut shop they sing and dance (oh whey oh) spin the clubs cruise down the block  all the japanese with their yen the party boys call the kremlin and the chinese know (oh whey oh) they walk the line like egyptian  all the cops in the doughnut shop say ay oh whey oh, ay oh whey oh walk like an egyptian walk like an egyptian   six o'clock already i was just in the middle of a dream i was kissin' valentino by a crystal blue italian stream but i can't be late 'cause then i guess i just won't get paid these are the days when you wish your bed was already made  it's just another manic monday i wish it was sunday 'cause that's my funday my i don't have to runday it's just another manic monday  have to catch an early train got to be to work by nine and if i had an air-o-plane i still couldn't make it on time 'cause it takes me so long just to figure out what i'm gonna wear blame it on the train but the boss is already there  all of the nights why did my lover have to pick last night to get down doesn't it matter that i have to feed the both of us employment's down he tells me in his bedroom voice c'mon honey, let's go make some noise time it goes so fast when you're having fun   close your eyes, give me your hand, darling do you feel my heart beating do you understand do you feel the same am i only dreaming is this burning an eternal flame  i believe it's meant to be, darling i watch you when you are sleeping you belong with me do you feel the same am i only dreaming or is this burning an eternal flame  say my name sun shines through the rain a whole life so lonely and then you come and ease the pain i don't want to lose this feeling "<p>Get an image and font face</p>
+fontpath = os.path.join('EastSeaDokdo-Regular.ttf') !wget 'https://images-na.ssl-images-amazon.com/images/I/510VP5aoo%2BL._AC_SL1402_.jpg' 'test.jpg'<p>https://fonts.google.com/specimen/East+Sea+Dokdo#standard-styles</p>
+<p>Lets createa visualization function to do everything we could possibly want</p>
+def show(img, s1, s2):
+    plt.figure(figsize=(s1,s2))
+    plt.clf() # Clear Figure
+    plt.imshow(img, interpolation='bilinear')
+    plt.axis('off')
+    plt.show()
+    #fig.set_figwidth(14) # set width
+    #fig.set_figheight(12) # set height <p>create an array mask of the image</p>
+img = Image.open('510VP5aoo+L._AC_SL1402_.jpg')
+mask = np.array(img)<p>and.... GO!</p>
+cloud = WordCloud(stopwords=STOPWORDS, background_color='white', font_path=fontpath, max_words=300, width=300, height=200 ).generate(words)
+show(cloud, 4, 4)show(img, 4, 4)cloud = WordCloud(mask= mask, stopwords=STOPWORDS, background_color='white', max_words=300, width=300, height=200 ).generate(words)
+show(cloud, 4, 4)<Figure size 288x288 with 1 Axes># max_font_size=1000
+# font_path=fontpath,
+color_mask = ImageColorGenerator(mask)
+coloredMaskCloud = cloud.recolor(color_func=color_mask)
+show(coloredMaskCloud, 4, 4)<p>Animating the SVG would be cool. But tricky. Animate the words within the svg?</p>
+<p>Maybe next time.</p>
+<p>For now, here are some miscellaneous notes on how to read files and do stuff with em. Like removing stop words.</p>
+exClean = """
+ds_2_words= ds_2.split()
+print('Length before removing the stopwords: ', len(ds_2_words))
+for word in ds_2_words:
+    if word in ENGLISH_STOP_WORDS:
+        ds_2_words.remove(word)
+    else:
+        pass
+    
+print('Length after removing the stopwords: ', len(ds_2_words))
+"""exeList = """
+values = df['Client'].value_counts().keys().tolist()
+counts = df['Client'].value_counts().tolist()
+"""exeRead = """
+with open('word.txt', 'r') as f: #Read the data or words
+    word_text= f.read()
+words= word_text.split(',') #preprocessing before using in WordCloud module
+cloud= WordCloud().generate_from_text(' '.join(words))
+"""<p>This actually turned out to be rather straight forward</p>
+import requests
+from bs4 import BeautifulSoup as bs
+from wordcloud import WordCloud, STOPWORDS 
+from PIL import Image #use to open the image
+import matplotlib.pyplot as plt
+import numpy as np
+import os 
+%matplotlib inline<p>A library exists to do what we want</p>
+from wordcloud import ImageColorGenerator<p>So we just get some text</p>
+words =""
+bs = bs(requests.get('http://www.myths.com/pub/lyrics/Bangles_.html').text, 'html.parser')
+for x in bs.find_all("pre"): words = words+x.text
+words = words.replace("\n", " ").lower() words" all the old paintings on the tombs they do the sand dance don't you know if they move too quick (oh whey oh) they're falling down like a domino  all the bazaar men by the nile they got the money on a bet gold crocodiles (oh whey oh) they snap their teeth on your cigarette  foreign types with the hookah pipes say ay oh whey oh, ay oh whey oh walk like an egyptian  the blonde waitresses take their trays they spin around and they cross the floor they've got the moves (oh whey oh) you drop your drink then they bring you more  all the school kids so sick of books they like the punk and the metal band when the buzzer rings (oh whey oh) they're walking like an egyptian  all the kids in the marketplace say ay oh whey oh, ay oh whey oh walk like an egyptian  slide your feet up the street bend your back shift your arm then you pull it back life is hard you know (oh whey oh) so strike a pose on a cadillac  if you want to find all the cops they're hanging out in the donut shop they sing and dance (oh whey oh) spin the clubs cruise down the block  all the japanese with their yen the party boys call the kremlin and the chinese know (oh whey oh) they walk the line like egyptian  all the cops in the doughnut shop say ay oh whey oh, ay oh whey oh walk like an egyptian walk like an egyptian   six o'clock already i was just in the middle of a dream i was kissin' valentino by a crystal blue italian stream but i can't be late 'cause then i guess i just won't get paid these are the days when you wish your bed was already made  it's just another manic monday i wish it was sunday 'cause that's my funday my i don't have to runday it's just another manic monday  have to catch an early train got to be to work by nine and if i had an air-o-plane i still couldn't make it on time 'cause it takes me so long just to figure out what i'm gonna wear blame it on the train but the boss is already there  all of the nights why did my lover have to pick last night to get down doesn't it matter that i have to feed the both of us employment's down he tells me in his bedroom voice c'mon honey, let's go make some noise time it goes so fast when you're having fun   close your eyes, give me your hand, darling do you feel my heart beating do you understand do you feel the same am i only dreaming is this burning an eternal flame  i believe it's meant to be, darling i watch you when you are sleeping you belong with me do you feel the same am i only dreaming or is this burning an eternal flame  say my name sun shines through the rain a whole life so lonely and then you come and ease the pain i don't want to lose this feeling "<p>Get an image and font face</p>
+fontpath = os.path.join('EastSeaDokdo-Regular.ttf') !wget 'https://images-na.ssl-images-amazon.com/images/I/510VP5aoo%2BL._AC_SL1402_.jpg' 'test.jpg'<p>https://fonts.google.com/specimen/East+Sea+Dokdo#standard-styles</p>
+<p>Lets createa visualization function to do everything we could possibly want</p>
+def show(img, s1, s2):
+    plt.figure(figsize=(s1,s2))
+    plt.clf() # Clear Figure
+    plt.imshow(img, interpolation='bilinear')
+    plt.axis('off')
+    plt.show()
+    #fig.set_figwidth(14) # set width
+    #fig.set_figheight(12) # set height <p>create an array mask of the image</p>
+img = Image.open('510VP5aoo+L._AC_SL1402_.jpg')
+mask = np.array(img)<p>and.... GO!</p>
+cloud = WordCloud(stopwords=STOPWORDS, background_color='white', font_path=fontpath, max_words=300, width=300, height=200 ).generate(words)
+show(cloud, 4, 4)show(img, 4, 4)cloud = WordCloud(mask= mask, stopwords=STOPWORDS, background_color='white', max_words=300, width=300, height=200 ).generate(words)
+show(cloud, 4, 4)<Figure size 288x288 with 1 Axes># max_font_size=1000
+# font_path=fontpath,
+color_mask = ImageColorGenerator(mask)
+coloredMaskCloud = cloud.recolor(color_func=color_mask)
+show(coloredMaskCloud, 4, 4)<p>Animating the SVG would be cool. But tricky. Animate the words within the svg?</p>
+<p>Maybe next time.</p>
+<p>For now, here are some miscellaneous notes on how to read files and do stuff with em. Like removing stop words.</p>
+exClean = """
+ds_2_words= ds_2.split()
+print('Length before removing the stopwords: ', len(ds_2_words))
+for word in ds_2_words:
+    if word in ENGLISH_STOP_WORDS:
+        ds_2_words.remove(word)
+    else:
+        pass
+    
+print('Length after removing the stopwords: ', len(ds_2_words))
+"""exeList = """
+values = df['Client'].value_counts().keys().tolist()
+counts = df['Client'].value_counts().tolist()
+"""exeRead = """
+with open('word.txt', 'r') as f: #Read the data or words
+    word_text= f.read()
+words= word_text.split(',') #preprocessing before using in WordCloud module
+cloud= WordCloud().generate_from_text(' '.join(words))
+"""

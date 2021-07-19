@@ -1,0 +1,1243 @@
+<p>We will need these libraries</p>
+import requestsimport pandas as pdimport mechanicalsoupfrom bs4 import BeautifulSoup# This is the URL Endpoing that has our data: 
+url = 'https://md-dc.211counts.org/dashBoard/barChart'
+# And these are the paramaters that get submitted to the endpoint as a POST request
+myobj = {
+'identifierCategory': '',
+'sourceType': '',
+'fromMobile': False,
+'id': {"ids":[14160]},
+'timeIntervalId': 333,
+'centerId': 43,
+'fromDate': 0,
+'toDate': 0,
+'type': 'Z'
+}<h2>Miner</h2>
+<p>(Works, but html content needs to be scraped seperately, through a same-origin request)</p>
+# Given the 211 html page, will return a div containing data for each record. 
+# This needs additional scraping, but now each record has its respective html is isolated.
+def scrape(html_data):
+    soup = BeautifulSoup(html_data, "html.parser")
+    categories = soup.findAll("div", {"class": "categories"})
+    return categories# This will mine the scraped html pulled from Puppeteer 
+df = pd.DataFrame(data={'zipCodeId': [], 'title': [], 'value': []})
+formValues = htmlText
+# Loop through array of html containing our data
+for x in scrape(formValues):
+  soup = BeautifulSoup(str(x), "html.parser")
+  # get the title and value from the records html
+  title = soup.find("span", {"class": "toolTipSubCategory"})
+  value = soup.find("span", {"data-value": True})
+  # append it to our dataframe if both value and title exit
+  if(str(title) != 'None' and str(value) != 'None' ): 
+    title = title.text
+    value = value['data-value']
+    df = df.append({'zipCodeId': str(14174), 'title': title, 'value': value}, ignore_index=True)dfdf.to_csv('test123.csv', index=False)# A placeholder until we get the puppeteer scraper working. 
+htmlText = ''# Given the 211 html page, will return a div containing data for each record. 
+# This needs additional scraping, but now each record has its respective html is isolated.
+def scrape(html_data):
+    soup = BeautifulSoup(html_data, "html.parser")
+    categories = soup.findAll("div", {"class": "categories"})
+    return categoriesdfdf.to_csv('test123.csv', index=False)<h2>Scraper</h2>
+<p>(Works but doesnt give us what we want)</p>
+<p>Get the page</p>
+browser = mechanicalsoup.StatefulBrowser()
+browser.open("https://md-dc.211counts.org/")
+browser.get_url()<p>Find the form and select our options</p>
+browser.select_form('div[id="search"]')
+browser['chkZ'] = '14160'# browser.get_current_form().print_summary()
+response = browser.submit_selected()<p>Save the output for previewing</p>
+text_file = open("sample.txt", "w")
+n = text_file.write(response.text)
+text_file.close()
+# print(response.text)<p>Unfortunately, this does not work! </p>
+<p>Our data is stored as dynamic content that is not delivered to us here.</p>
+<p>We will need to use Pupeteer to render the dynamic javascript content.</p>
+<p>What a shame...</p>
+<h2>Final Solution (Javascript)</h2>
+<p>This needs to be ran in a seperate js file.</p>
+/*
+ * https://stackoverflow.com/questions/48681145/set-pupeteer-window-size-when-running-not-headless-not-viewport
+https://medium.com/@aslushnikov/automating-clicks-in-chromium-a50e7f01d3fb
+* 
+*/
+const puppeteer = require('puppeteer');
+var zipCodes = { 
+  '21201':11175, 
+  '21202':11176, 
+  '21203':14550, 
+  '21204':11177, 
+  '21205':11178, 
+  '21206':11179, 
+  '21207':11180, 
+  '21208':11181,
+  '21209':11182, 
+  '21210':11183, 
+  '21211':11184, 
+  '21212':11185, 
+  '21213':11373, 
+  '21214':11375, 
+  '21215':11376, 
+  '21216':11377,
+  '21217':11378, 
+  '21218':11379, 
+  '21219':11380, 
+  '21220':11381, 
+  '21221':11382, 
+  '21222':11383, 
+  '21223':11384, 
+  '21224':11385, 
+  '21225':11386, 
+  '21226':11387, 
+  '21227':11388, 
+  '21228':11389, 
+  '21229':11390, 
+  '21230':11391,
+  '21231':11392, 
+};
+let nomatch = [ 
+  '21232', 
+  '14550', 
+  '11177', 
+  '11178', 
+  '11178', 
+  '11189'
+]
+
+var finalData = {};
+(async () => {
+  // Init url to scrape, load browser and page
+  const browser = await puppeteer.launch({
+    headless: false, // The browser is visible
+    ignoreHTTPSErrors: true,
+    args: [`--window-size=1200,1000`] // new option
+  })
+                            
+  const page = await browser.newPage()
+  await page.goto('https://md-dc.211counts.org/')
+  await page.setViewport({ width: 1200, height: 1000 })
+  await page.waitForSelector('#mainContent #identifierCategory')
+  // Click Covid-19 Checkbox
+  await page.click('#mainContent #identifierCategory') 
+  await page.waitForSelector('#mainContent #displayCount')
+  // Click Radio Button
+  await page.click('#mainContent #displayCount')
+  // Click to Expand the Timestamp Dropdown
+  await page.mouse.move(713, 37);
+  await page.mouse.down({button: 'left'});
+  await page.mouse.up({button: 'left'});
+  // Click from the dropdwn '30 Days'
+  await page.mouse.move(688, 194);
+  await page.mouse.down({button: 'left'});
+  await page.mouse.up({button: 'left'}); 
+  // Search for every zip code and add the result to an object
+  for (var j = 0; j < Object.keys(zipCodes).length; j++) {
+	var currentZipCode = Object.keys(zipCodes)[j]
+	var zid = zipCodes[currentZipCode]	 
+	console.log("CurZip: " + currentZipCode, ' ID: ', 'input[value="'+zid+'"]');  
+	await page.evaluate((zc) => {	
+	  // Prepare the zip code checkbox identifier to click on
+	  let reset = 'input[value="RESET"]';
+	  $(reset).click();
+	  let zipCodeCheckBox = 'input[value="' + zc  + '"]';
+	  $(zipCodeCheckBox).click();
+	  // Get search button, click
+      $("#submitSearch").click();
+	}, zid);
+	
+	// And wait for the results to load
+	await page.waitFor(1000);
+	
+	await page.screenshot({path: currentZipCode+'.png'});
+	
+	await page.evaluate((zc) => {
+		// Click on count radio button 
+		let countsBtn = document.getElementById('displayCount');
+		countsBtn.click();
+		// Prepare the zip code checkbox identifier to click on
+		let zipCodeCheckBox = 'input[value="' + zc  + '"]';
+		$(zipCodeCheckBox).click();
+		// Get search button, click
+		$("#submitSearch").click();
+	}, currentZipCode);
+	// And wait for the results to load
+	await page.waitFor(1000);
+	await page.screenshot({path: currentZipCode+'.png'});
+		// Then we grab the results
+	let result = await page.evaluate(async () => {
+      // Get all categories div
+	  let categories = document.querySelectorAll(".categories");
+	  // Iterate through all categories and add their values to an object
+	  let pointer = 0; 
+	  let data = {}
+	  while (pointer < categories.length) {
+		// Now we have access to two categories
+		let category = categories[pointer];
+		// Making sure we have both a label and a value and category is not null
+		if (category != null && category != undefined && category.children.length > 1) {
+		  let label = ""; 
+		  let value = "";
+		  let percentage = "";
+		  for (var i = 0; i < category.children.length; i++) {
+			let node = category.children[i];
+			// Make sure that the node is either a label or a paragraph, can't rely on indices alone
+			if (node.nodeName.toLowerCase() === 'label') {
+			  label = node.querySelector("span").innerText;
+			}
+			if (node.nodeName.toLowerCase() === 'p') {
+			  value = node.querySelector("span").getAttribute("data-value");
+			  percentage = node.querySelector("span").getAttribute("data-percentage");
+		    }  
+		  }
+		  data[label + " Count"] = value;
+		  data[label + " Percent"] = percentage;
+		}
+		pointer += 1;
+	  }
+	  return data;
+	});
+	// Now we add this zip code's result to the final answer
+	finalData[currentZipCode.toString()] = result;
+  }
+  console.log(JSON.stringify(finalData));
+
+  await page.waitFor(3000); 
+  
+  
+  // await browser.close()
+})() <p>We will need these libraries</p>
+import requestsimport pandas as pdimport mechanicalsoupfrom bs4 import BeautifulSoup# This is the URL Endpoing that has our data: 
+url = 'https://md-dc.211counts.org/dashBoard/barChart'
+# And these are the paramaters that get submitted to the endpoint as a POST request
+myobj = {
+'identifierCategory': '',
+'sourceType': '',
+'fromMobile': False,
+'id': {"ids":[14160]},
+'timeIntervalId': 333,
+'centerId': 43,
+'fromDate': 0,
+'toDate': 0,
+'type': 'Z'
+}<h2>Miner</h2>
+<p>(Works, but html content needs to be scraped seperately, through a same-origin request)</p>
+# Given the 211 html page, will return a div containing data for each record. 
+# This needs additional scraping, but now each record has its respective html is isolated.
+def scrape(html_data):
+    soup = BeautifulSoup(html_data, "html.parser")
+    categories = soup.findAll("div", {"class": "categories"})
+    return categories# This will mine the scraped html pulled from Puppeteer 
+df = pd.DataFrame(data={'zipCodeId': [], 'title': [], 'value': []})
+formValues = htmlText
+# Loop through array of html containing our data
+for x in scrape(formValues):
+  soup = BeautifulSoup(str(x), "html.parser")
+  # get the title and value from the records html
+  title = soup.find("span", {"class": "toolTipSubCategory"})
+  value = soup.find("span", {"data-value": True})
+  # append it to our dataframe if both value and title exit
+  if(str(title) != 'None' and str(value) != 'None' ): 
+    title = title.text
+    value = value['data-value']
+    df = df.append({'zipCodeId': str(14174), 'title': title, 'value': value}, ignore_index=True)dfdf.to_csv('test123.csv', index=False)# A placeholder until we get the puppeteer scraper working. 
+htmlText = ''# Given the 211 html page, will return a div containing data for each record. 
+# This needs additional scraping, but now each record has its respective html is isolated.
+def scrape(html_data):
+    soup = BeautifulSoup(html_data, "html.parser")
+    categories = soup.findAll("div", {"class": "categories"})
+    return categoriesdfdf.to_csv('test123.csv', index=False)<h2>Scraper</h2>
+<p>(Works but doesnt give us what we want)</p>
+<p>Get the page</p>
+browser = mechanicalsoup.StatefulBrowser()
+browser.open("https://md-dc.211counts.org/")
+browser.get_url()<p>Find the form and select our options</p>
+browser.select_form('div[id="search"]')
+browser['chkZ'] = '14160'# browser.get_current_form().print_summary()
+response = browser.submit_selected()<p>Save the output for previewing</p>
+text_file = open("sample.txt", "w")
+n = text_file.write(response.text)
+text_file.close()
+# print(response.text)<p>Unfortunately, this does not work! </p>
+<p>Our data is stored as dynamic content that is not delivered to us here.</p>
+<p>We will need to use Pupeteer to render the dynamic javascript content.</p>
+<p>What a shame...</p>
+<h2>Final Solution (Javascript)</h2>
+<p>This needs to be ran in a seperate js file.</p>
+/*
+ * https://stackoverflow.com/questions/48681145/set-pupeteer-window-size-when-running-not-headless-not-viewport
+https://medium.com/@aslushnikov/automating-clicks-in-chromium-a50e7f01d3fb
+* 
+*/
+const puppeteer = require('puppeteer');
+var zipCodes = { 
+  '21201':11175, 
+  '21202':11176, 
+  '21203':14550, 
+  '21204':11177, 
+  '21205':11178, 
+  '21206':11179, 
+  '21207':11180, 
+  '21208':11181,
+  '21209':11182, 
+  '21210':11183, 
+  '21211':11184, 
+  '21212':11185, 
+  '21213':11373, 
+  '21214':11375, 
+  '21215':11376, 
+  '21216':11377,
+  '21217':11378, 
+  '21218':11379, 
+  '21219':11380, 
+  '21220':11381, 
+  '21221':11382, 
+  '21222':11383, 
+  '21223':11384, 
+  '21224':11385, 
+  '21225':11386, 
+  '21226':11387, 
+  '21227':11388, 
+  '21228':11389, 
+  '21229':11390, 
+  '21230':11391,
+  '21231':11392, 
+};
+let nomatch = [ 
+  '21232', 
+  '14550', 
+  '11177', 
+  '11178', 
+  '11178', 
+  '11189'
+]
+
+var finalData = {};
+(async () => {
+  // Init url to scrape, load browser and page
+  const browser = await puppeteer.launch({
+    headless: false, // The browser is visible
+    ignoreHTTPSErrors: true,
+    args: [`--window-size=1200,1000`] // new option
+  })
+                            
+  const page = await browser.newPage()
+  await page.goto('https://md-dc.211counts.org/')
+  await page.setViewport({ width: 1200, height: 1000 })
+  await page.waitForSelector('#mainContent #identifierCategory')
+  // Click Covid-19 Checkbox
+  await page.click('#mainContent #identifierCategory') 
+  await page.waitForSelector('#mainContent #displayCount')
+  // Click Radio Button
+  await page.click('#mainContent #displayCount')
+  // Click to Expand the Timestamp Dropdown
+  await page.mouse.move(713, 37);
+  await page.mouse.down({button: 'left'});
+  await page.mouse.up({button: 'left'});
+  // Click from the dropdwn '30 Days'
+  await page.mouse.move(688, 194);
+  await page.mouse.down({button: 'left'});
+  await page.mouse.up({button: 'left'}); 
+  // Search for every zip code and add the result to an object
+  for (var j = 0; j < Object.keys(zipCodes).length; j++) {
+	var currentZipCode = Object.keys(zipCodes)[j]
+	var zid = zipCodes[currentZipCode]	 
+	console.log("CurZip: " + currentZipCode, ' ID: ', 'input[value="'+zid+'"]');  
+	await page.evaluate((zc) => {	
+	  // Prepare the zip code checkbox identifier to click on
+	  let reset = 'input[value="RESET"]';
+	  $(reset).click();
+	  let zipCodeCheckBox = 'input[value="' + zc  + '"]';
+	  $(zipCodeCheckBox).click();
+	  // Get search button, click
+      $("#submitSearch").click();
+	}, zid);
+	
+	// And wait for the results to load
+	await page.waitFor(1000);
+	
+	await page.screenshot({path: currentZipCode+'.png'});
+	
+	await page.evaluate((zc) => {
+		// Click on count radio button 
+		let countsBtn = document.getElementById('displayCount');
+		countsBtn.click();
+		// Prepare the zip code checkbox identifier to click on
+		let zipCodeCheckBox = 'input[value="' + zc  + '"]';
+		$(zipCodeCheckBox).click();
+		// Get search button, click
+		$("#submitSearch").click();
+	}, currentZipCode);
+	// And wait for the results to load
+	await page.waitFor(1000);
+	await page.screenshot({path: currentZipCode+'.png'});
+		// Then we grab the results
+	let result = await page.evaluate(async () => {
+      // Get all categories div
+	  let categories = document.querySelectorAll(".categories");
+	  // Iterate through all categories and add their values to an object
+	  let pointer = 0; 
+	  let data = {}
+	  while (pointer < categories.length) {
+		// Now we have access to two categories
+		let category = categories[pointer];
+		// Making sure we have both a label and a value and category is not null
+		if (category != null && category != undefined && category.children.length > 1) {
+		  let label = ""; 
+		  let value = "";
+		  let percentage = "";
+		  for (var i = 0; i < category.children.length; i++) {
+			let node = category.children[i];
+			// Make sure that the node is either a label or a paragraph, can't rely on indices alone
+			if (node.nodeName.toLowerCase() === 'label') {
+			  label = node.querySelector("span").innerText;
+			}
+			if (node.nodeName.toLowerCase() === 'p') {
+			  value = node.querySelector("span").getAttribute("data-value");
+			  percentage = node.querySelector("span").getAttribute("data-percentage");
+		    }  
+		  }
+		  data[label + " Count"] = value;
+		  data[label + " Percent"] = percentage;
+		}
+		pointer += 1;
+	  }
+	  return data;
+	});
+	// Now we add this zip code's result to the final answer
+	finalData[currentZipCode.toString()] = result;
+  }
+  console.log(JSON.stringify(finalData));
+
+  await page.waitFor(3000); 
+  
+  
+  // await browser.close()
+})() <p>We will need these libraries</p>
+import requestsimport pandas as pdimport mechanicalsoupfrom bs4 import BeautifulSoup# This is the URL Endpoing that has our data: 
+url = 'https://md-dc.211counts.org/dashBoard/barChart'
+# And these are the paramaters that get submitted to the endpoint as a POST request
+myobj = {
+'identifierCategory': '',
+'sourceType': '',
+'fromMobile': False,
+'id': {"ids":[14160]},
+'timeIntervalId': 333,
+'centerId': 43,
+'fromDate': 0,
+'toDate': 0,
+'type': 'Z'
+}<h2>Miner</h2>
+<p>(Works, but html content needs to be scraped seperately, through a same-origin request)</p>
+# Given the 211 html page, will return a div containing data for each record. 
+# This needs additional scraping, but now each record has its respective html is isolated.
+def scrape(html_data):
+    soup = BeautifulSoup(html_data, "html.parser")
+    categories = soup.findAll("div", {"class": "categories"})
+    return categories# This will mine the scraped html pulled from Puppeteer 
+df = pd.DataFrame(data={'zipCodeId': [], 'title': [], 'value': []})
+formValues = htmlText
+# Loop through array of html containing our data
+for x in scrape(formValues):
+  soup = BeautifulSoup(str(x), "html.parser")
+  # get the title and value from the records html
+  title = soup.find("span", {"class": "toolTipSubCategory"})
+  value = soup.find("span", {"data-value": True})
+  # append it to our dataframe if both value and title exit
+  if(str(title) != 'None' and str(value) != 'None' ): 
+    title = title.text
+    value = value['data-value']
+    df = df.append({'zipCodeId': str(14174), 'title': title, 'value': value}, ignore_index=True)dfdf.to_csv('test123.csv', index=False)# A placeholder until we get the puppeteer scraper working. 
+htmlText = ''# Given the 211 html page, will return a div containing data for each record. 
+# This needs additional scraping, but now each record has its respective html is isolated.
+def scrape(html_data):
+    soup = BeautifulSoup(html_data, "html.parser")
+    categories = soup.findAll("div", {"class": "categories"})
+    return categoriesdfdf.to_csv('test123.csv', index=False)<h2>Scraper</h2>
+<p>(Works but doesnt give us what we want)</p>
+<p>Get the page</p>
+browser = mechanicalsoup.StatefulBrowser()
+browser.open("https://md-dc.211counts.org/")
+browser.get_url()<p>Find the form and select our options</p>
+browser.select_form('div[id="search"]')
+browser['chkZ'] = '14160'# browser.get_current_form().print_summary()
+response = browser.submit_selected()<p>Save the output for previewing</p>
+text_file = open("sample.txt", "w")
+n = text_file.write(response.text)
+text_file.close()
+# print(response.text)<p>Unfortunately, this does not work! </p>
+<p>Our data is stored as dynamic content that is not delivered to us here.</p>
+<p>We will need to use Pupeteer to render the dynamic javascript content.</p>
+<p>What a shame...</p>
+<h2>Final Solution (Javascript)</h2>
+<p>This needs to be ran in a seperate js file.</p>
+/*
+ * https://stackoverflow.com/questions/48681145/set-pupeteer-window-size-when-running-not-headless-not-viewport
+https://medium.com/@aslushnikov/automating-clicks-in-chromium-a50e7f01d3fb
+* 
+*/
+const puppeteer = require('puppeteer');
+var zipCodes = { 
+  '21201':11175, 
+  '21202':11176, 
+  '21203':14550, 
+  '21204':11177, 
+  '21205':11178, 
+  '21206':11179, 
+  '21207':11180, 
+  '21208':11181,
+  '21209':11182, 
+  '21210':11183, 
+  '21211':11184, 
+  '21212':11185, 
+  '21213':11373, 
+  '21214':11375, 
+  '21215':11376, 
+  '21216':11377,
+  '21217':11378, 
+  '21218':11379, 
+  '21219':11380, 
+  '21220':11381, 
+  '21221':11382, 
+  '21222':11383, 
+  '21223':11384, 
+  '21224':11385, 
+  '21225':11386, 
+  '21226':11387, 
+  '21227':11388, 
+  '21228':11389, 
+  '21229':11390, 
+  '21230':11391,
+  '21231':11392, 
+};
+let nomatch = [ 
+  '21232', 
+  '14550', 
+  '11177', 
+  '11178', 
+  '11178', 
+  '11189'
+]
+
+var finalData = {};
+(async () => {
+  // Init url to scrape, load browser and page
+  const browser = await puppeteer.launch({
+    headless: false, // The browser is visible
+    ignoreHTTPSErrors: true,
+    args: [`--window-size=1200,1000`] // new option
+  })
+                            
+  const page = await browser.newPage()
+  await page.goto('https://md-dc.211counts.org/')
+  await page.setViewport({ width: 1200, height: 1000 })
+  await page.waitForSelector('#mainContent #identifierCategory')
+  // Click Covid-19 Checkbox
+  await page.click('#mainContent #identifierCategory') 
+  await page.waitForSelector('#mainContent #displayCount')
+  // Click Radio Button
+  await page.click('#mainContent #displayCount')
+  // Click to Expand the Timestamp Dropdown
+  await page.mouse.move(713, 37);
+  await page.mouse.down({button: 'left'});
+  await page.mouse.up({button: 'left'});
+  // Click from the dropdwn '30 Days'
+  await page.mouse.move(688, 194);
+  await page.mouse.down({button: 'left'});
+  await page.mouse.up({button: 'left'}); 
+  // Search for every zip code and add the result to an object
+  for (var j = 0; j < Object.keys(zipCodes).length; j++) {
+	var currentZipCode = Object.keys(zipCodes)[j]
+	var zid = zipCodes[currentZipCode]	 
+	console.log("CurZip: " + currentZipCode, ' ID: ', 'input[value="'+zid+'"]');  
+	await page.evaluate((zc) => {	
+	  // Prepare the zip code checkbox identifier to click on
+	  let reset = 'input[value="RESET"]';
+	  $(reset).click();
+	  let zipCodeCheckBox = 'input[value="' + zc  + '"]';
+	  $(zipCodeCheckBox).click();
+	  // Get search button, click
+      $("#submitSearch").click();
+	}, zid);
+	
+	// And wait for the results to load
+	await page.waitFor(1000);
+	
+	await page.screenshot({path: currentZipCode+'.png'});
+	
+	await page.evaluate((zc) => {
+		// Click on count radio button 
+		let countsBtn = document.getElementById('displayCount');
+		countsBtn.click();
+		// Prepare the zip code checkbox identifier to click on
+		let zipCodeCheckBox = 'input[value="' + zc  + '"]';
+		$(zipCodeCheckBox).click();
+		// Get search button, click
+		$("#submitSearch").click();
+	}, currentZipCode);
+	// And wait for the results to load
+	await page.waitFor(1000);
+	await page.screenshot({path: currentZipCode+'.png'});
+		// Then we grab the results
+	let result = await page.evaluate(async () => {
+      // Get all categories div
+	  let categories = document.querySelectorAll(".categories");
+	  // Iterate through all categories and add their values to an object
+	  let pointer = 0; 
+	  let data = {}
+	  while (pointer < categories.length) {
+		// Now we have access to two categories
+		let category = categories[pointer];
+		// Making sure we have both a label and a value and category is not null
+		if (category != null && category != undefined && category.children.length > 1) {
+		  let label = ""; 
+		  let value = "";
+		  let percentage = "";
+		  for (var i = 0; i < category.children.length; i++) {
+			let node = category.children[i];
+			// Make sure that the node is either a label or a paragraph, can't rely on indices alone
+			if (node.nodeName.toLowerCase() === 'label') {
+			  label = node.querySelector("span").innerText;
+			}
+			if (node.nodeName.toLowerCase() === 'p') {
+			  value = node.querySelector("span").getAttribute("data-value");
+			  percentage = node.querySelector("span").getAttribute("data-percentage");
+		    }  
+		  }
+		  data[label + " Count"] = value;
+		  data[label + " Percent"] = percentage;
+		}
+		pointer += 1;
+	  }
+	  return data;
+	});
+	// Now we add this zip code's result to the final answer
+	finalData[currentZipCode.toString()] = result;
+  }
+  console.log(JSON.stringify(finalData));
+
+  await page.waitFor(3000); 
+  
+  
+  // await browser.close()
+})() <p>We will need these libraries</p>
+import requestsimport pandas as pdimport mechanicalsoupfrom bs4 import BeautifulSoup# This is the URL Endpoing that has our data: 
+url = 'https://md-dc.211counts.org/dashBoard/barChart'
+# And these are the paramaters that get submitted to the endpoint as a POST request
+myobj = {
+'identifierCategory': '',
+'sourceType': '',
+'fromMobile': False,
+'id': {"ids":[14160]},
+'timeIntervalId': 333,
+'centerId': 43,
+'fromDate': 0,
+'toDate': 0,
+'type': 'Z'
+}<h2>Miner</h2>
+<p>(Works, but html content needs to be scraped seperately, through a same-origin request)</p>
+# Given the 211 html page, will return a div containing data for each record. 
+# This needs additional scraping, but now each record has its respective html is isolated.
+def scrape(html_data):
+    soup = BeautifulSoup(html_data, "html.parser")
+    categories = soup.findAll("div", {"class": "categories"})
+    return categories# This will mine the scraped html pulled from Puppeteer 
+df = pd.DataFrame(data={'zipCodeId': [], 'title': [], 'value': []})
+formValues = htmlText
+# Loop through array of html containing our data
+for x in scrape(formValues):
+  soup = BeautifulSoup(str(x), "html.parser")
+  # get the title and value from the records html
+  title = soup.find("span", {"class": "toolTipSubCategory"})
+  value = soup.find("span", {"data-value": True})
+  # append it to our dataframe if both value and title exit
+  if(str(title) != 'None' and str(value) != 'None' ): 
+    title = title.text
+    value = value['data-value']
+    df = df.append({'zipCodeId': str(14174), 'title': title, 'value': value}, ignore_index=True)dfdf.to_csv('test123.csv', index=False)# A placeholder until we get the puppeteer scraper working. 
+htmlText = ''# Given the 211 html page, will return a div containing data for each record. 
+# This needs additional scraping, but now each record has its respective html is isolated.
+def scrape(html_data):
+    soup = BeautifulSoup(html_data, "html.parser")
+    categories = soup.findAll("div", {"class": "categories"})
+    return categoriesdfdf.to_csv('test123.csv', index=False)<h2>Scraper</h2>
+<p>(Works but doesnt give us what we want)</p>
+<p>Get the page</p>
+browser = mechanicalsoup.StatefulBrowser()
+browser.open("https://md-dc.211counts.org/")
+browser.get_url()<p>Find the form and select our options</p>
+browser.select_form('div[id="search"]')
+browser['chkZ'] = '14160'# browser.get_current_form().print_summary()
+response = browser.submit_selected()<p>Save the output for previewing</p>
+text_file = open("sample.txt", "w")
+n = text_file.write(response.text)
+text_file.close()
+# print(response.text)<p>Unfortunately, this does not work! </p>
+<p>Our data is stored as dynamic content that is not delivered to us here.</p>
+<p>We will need to use Pupeteer to render the dynamic javascript content.</p>
+<p>What a shame...</p>
+<h2>Final Solution (Javascript)</h2>
+<p>This needs to be ran in a seperate js file.</p>
+/*
+ * https://stackoverflow.com/questions/48681145/set-pupeteer-window-size-when-running-not-headless-not-viewport
+https://medium.com/@aslushnikov/automating-clicks-in-chromium-a50e7f01d3fb
+* 
+*/
+const puppeteer = require('puppeteer');
+var zipCodes = { 
+  '21201':11175, 
+  '21202':11176, 
+  '21203':14550, 
+  '21204':11177, 
+  '21205':11178, 
+  '21206':11179, 
+  '21207':11180, 
+  '21208':11181,
+  '21209':11182, 
+  '21210':11183, 
+  '21211':11184, 
+  '21212':11185, 
+  '21213':11373, 
+  '21214':11375, 
+  '21215':11376, 
+  '21216':11377,
+  '21217':11378, 
+  '21218':11379, 
+  '21219':11380, 
+  '21220':11381, 
+  '21221':11382, 
+  '21222':11383, 
+  '21223':11384, 
+  '21224':11385, 
+  '21225':11386, 
+  '21226':11387, 
+  '21227':11388, 
+  '21228':11389, 
+  '21229':11390, 
+  '21230':11391,
+  '21231':11392, 
+};
+let nomatch = [ 
+  '21232', 
+  '14550', 
+  '11177', 
+  '11178', 
+  '11178', 
+  '11189'
+]
+
+var finalData = {};
+(async () => {
+  // Init url to scrape, load browser and page
+  const browser = await puppeteer.launch({
+    headless: false, // The browser is visible
+    ignoreHTTPSErrors: true,
+    args: [`--window-size=1200,1000`] // new option
+  })
+                            
+  const page = await browser.newPage()
+  await page.goto('https://md-dc.211counts.org/')
+  await page.setViewport({ width: 1200, height: 1000 })
+  await page.waitForSelector('#mainContent #identifierCategory')
+  // Click Covid-19 Checkbox
+  await page.click('#mainContent #identifierCategory') 
+  await page.waitForSelector('#mainContent #displayCount')
+  // Click Radio Button
+  await page.click('#mainContent #displayCount')
+  // Click to Expand the Timestamp Dropdown
+  await page.mouse.move(713, 37);
+  await page.mouse.down({button: 'left'});
+  await page.mouse.up({button: 'left'});
+  // Click from the dropdwn '30 Days'
+  await page.mouse.move(688, 194);
+  await page.mouse.down({button: 'left'});
+  await page.mouse.up({button: 'left'}); 
+  // Search for every zip code and add the result to an object
+  for (var j = 0; j < Object.keys(zipCodes).length; j++) {
+	var currentZipCode = Object.keys(zipCodes)[j]
+	var zid = zipCodes[currentZipCode]	 
+	console.log("CurZip: " + currentZipCode, ' ID: ', 'input[value="'+zid+'"]');  
+	await page.evaluate((zc) => {	
+	  // Prepare the zip code checkbox identifier to click on
+	  let reset = 'input[value="RESET"]';
+	  $(reset).click();
+	  let zipCodeCheckBox = 'input[value="' + zc  + '"]';
+	  $(zipCodeCheckBox).click();
+	  // Get search button, click
+      $("#submitSearch").click();
+	}, zid);
+	
+	// And wait for the results to load
+	await page.waitFor(1000);
+	
+	await page.screenshot({path: currentZipCode+'.png'});
+	
+	await page.evaluate((zc) => {
+		// Click on count radio button 
+		let countsBtn = document.getElementById('displayCount');
+		countsBtn.click();
+		// Prepare the zip code checkbox identifier to click on
+		let zipCodeCheckBox = 'input[value="' + zc  + '"]';
+		$(zipCodeCheckBox).click();
+		// Get search button, click
+		$("#submitSearch").click();
+	}, currentZipCode);
+	// And wait for the results to load
+	await page.waitFor(1000);
+	await page.screenshot({path: currentZipCode+'.png'});
+		// Then we grab the results
+	let result = await page.evaluate(async () => {
+      // Get all categories div
+	  let categories = document.querySelectorAll(".categories");
+	  // Iterate through all categories and add their values to an object
+	  let pointer = 0; 
+	  let data = {}
+	  while (pointer < categories.length) {
+		// Now we have access to two categories
+		let category = categories[pointer];
+		// Making sure we have both a label and a value and category is not null
+		if (category != null && category != undefined && category.children.length > 1) {
+		  let label = ""; 
+		  let value = "";
+		  let percentage = "";
+		  for (var i = 0; i < category.children.length; i++) {
+			let node = category.children[i];
+			// Make sure that the node is either a label or a paragraph, can't rely on indices alone
+			if (node.nodeName.toLowerCase() === 'label') {
+			  label = node.querySelector("span").innerText;
+			}
+			if (node.nodeName.toLowerCase() === 'p') {
+			  value = node.querySelector("span").getAttribute("data-value");
+			  percentage = node.querySelector("span").getAttribute("data-percentage");
+		    }  
+		  }
+		  data[label + " Count"] = value;
+		  data[label + " Percent"] = percentage;
+		}
+		pointer += 1;
+	  }
+	  return data;
+	});
+	// Now we add this zip code's result to the final answer
+	finalData[currentZipCode.toString()] = result;
+  }
+  console.log(JSON.stringify(finalData));
+
+  await page.waitFor(3000); 
+  
+  
+  // await browser.close()
+})() <p>We will need these libraries</p>
+import requestsimport pandas as pdimport mechanicalsoupfrom bs4 import BeautifulSoup# This is the URL Endpoing that has our data: 
+url = 'https://md-dc.211counts.org/dashBoard/barChart'
+# And these are the paramaters that get submitted to the endpoint as a POST request
+myobj = {
+'identifierCategory': '',
+'sourceType': '',
+'fromMobile': False,
+'id': {"ids":[14160]},
+'timeIntervalId': 333,
+'centerId': 43,
+'fromDate': 0,
+'toDate': 0,
+'type': 'Z'
+}<h2>Miner</h2>
+<p>(Works, but html content needs to be scraped seperately, through a same-origin request)</p>
+# Given the 211 html page, will return a div containing data for each record. 
+# This needs additional scraping, but now each record has its respective html is isolated.
+def scrape(html_data):
+    soup = BeautifulSoup(html_data, "html.parser")
+    categories = soup.findAll("div", {"class": "categories"})
+    return categories# This will mine the scraped html pulled from Puppeteer 
+df = pd.DataFrame(data={'zipCodeId': [], 'title': [], 'value': []})
+formValues = htmlText
+# Loop through array of html containing our data
+for x in scrape(formValues):
+  soup = BeautifulSoup(str(x), "html.parser")
+  # get the title and value from the records html
+  title = soup.find("span", {"class": "toolTipSubCategory"})
+  value = soup.find("span", {"data-value": True})
+  # append it to our dataframe if both value and title exit
+  if(str(title) != 'None' and str(value) != 'None' ): 
+    title = title.text
+    value = value['data-value']
+    df = df.append({'zipCodeId': str(14174), 'title': title, 'value': value}, ignore_index=True)dfdf.to_csv('test123.csv', index=False)# A placeholder until we get the puppeteer scraper working. 
+htmlText = ''# Given the 211 html page, will return a div containing data for each record. 
+# This needs additional scraping, but now each record has its respective html is isolated.
+def scrape(html_data):
+    soup = BeautifulSoup(html_data, "html.parser")
+    categories = soup.findAll("div", {"class": "categories"})
+    return categoriesdfdf.to_csv('test123.csv', index=False)<h2>Scraper</h2>
+<p>(Works but doesnt give us what we want)</p>
+<p>Get the page</p>
+browser = mechanicalsoup.StatefulBrowser()
+browser.open("https://md-dc.211counts.org/")
+browser.get_url()<p>Find the form and select our options</p>
+browser.select_form('div[id="search"]')
+browser['chkZ'] = '14160'# browser.get_current_form().print_summary()
+response = browser.submit_selected()<p>Save the output for previewing</p>
+text_file = open("sample.txt", "w")
+n = text_file.write(response.text)
+text_file.close()
+# print(response.text)<p>Unfortunately, this does not work! </p>
+<p>Our data is stored as dynamic content that is not delivered to us here.</p>
+<p>We will need to use Pupeteer to render the dynamic javascript content.</p>
+<p>What a shame...</p>
+<h2>Final Solution (Javascript)</h2>
+<p>This needs to be ran in a seperate js file.</p>
+/*
+ * https://stackoverflow.com/questions/48681145/set-pupeteer-window-size-when-running-not-headless-not-viewport
+https://medium.com/@aslushnikov/automating-clicks-in-chromium-a50e7f01d3fb
+* 
+*/
+const puppeteer = require('puppeteer');
+var zipCodes = { 
+  '21201':11175, 
+  '21202':11176, 
+  '21203':14550, 
+  '21204':11177, 
+  '21205':11178, 
+  '21206':11179, 
+  '21207':11180, 
+  '21208':11181,
+  '21209':11182, 
+  '21210':11183, 
+  '21211':11184, 
+  '21212':11185, 
+  '21213':11373, 
+  '21214':11375, 
+  '21215':11376, 
+  '21216':11377,
+  '21217':11378, 
+  '21218':11379, 
+  '21219':11380, 
+  '21220':11381, 
+  '21221':11382, 
+  '21222':11383, 
+  '21223':11384, 
+  '21224':11385, 
+  '21225':11386, 
+  '21226':11387, 
+  '21227':11388, 
+  '21228':11389, 
+  '21229':11390, 
+  '21230':11391,
+  '21231':11392, 
+};
+let nomatch = [ 
+  '21232', 
+  '14550', 
+  '11177', 
+  '11178', 
+  '11178', 
+  '11189'
+]
+
+var finalData = {};
+(async () => {
+  // Init url to scrape, load browser and page
+  const browser = await puppeteer.launch({
+    headless: false, // The browser is visible
+    ignoreHTTPSErrors: true,
+    args: [`--window-size=1200,1000`] // new option
+  })
+                            
+  const page = await browser.newPage()
+  await page.goto('https://md-dc.211counts.org/')
+  await page.setViewport({ width: 1200, height: 1000 })
+  await page.waitForSelector('#mainContent #identifierCategory')
+  // Click Covid-19 Checkbox
+  await page.click('#mainContent #identifierCategory') 
+  await page.waitForSelector('#mainContent #displayCount')
+  // Click Radio Button
+  await page.click('#mainContent #displayCount')
+  // Click to Expand the Timestamp Dropdown
+  await page.mouse.move(713, 37);
+  await page.mouse.down({button: 'left'});
+  await page.mouse.up({button: 'left'});
+  // Click from the dropdwn '30 Days'
+  await page.mouse.move(688, 194);
+  await page.mouse.down({button: 'left'});
+  await page.mouse.up({button: 'left'}); 
+  // Search for every zip code and add the result to an object
+  for (var j = 0; j < Object.keys(zipCodes).length; j++) {
+	var currentZipCode = Object.keys(zipCodes)[j]
+	var zid = zipCodes[currentZipCode]	 
+	console.log("CurZip: " + currentZipCode, ' ID: ', 'input[value="'+zid+'"]');  
+	await page.evaluate((zc) => {	
+	  // Prepare the zip code checkbox identifier to click on
+	  let reset = 'input[value="RESET"]';
+	  $(reset).click();
+	  let zipCodeCheckBox = 'input[value="' + zc  + '"]';
+	  $(zipCodeCheckBox).click();
+	  // Get search button, click
+      $("#submitSearch").click();
+	}, zid);
+	
+	// And wait for the results to load
+	await page.waitFor(1000);
+	
+	await page.screenshot({path: currentZipCode+'.png'});
+	
+	await page.evaluate((zc) => {
+		// Click on count radio button 
+		let countsBtn = document.getElementById('displayCount');
+		countsBtn.click();
+		// Prepare the zip code checkbox identifier to click on
+		let zipCodeCheckBox = 'input[value="' + zc  + '"]';
+		$(zipCodeCheckBox).click();
+		// Get search button, click
+		$("#submitSearch").click();
+	}, currentZipCode);
+	// And wait for the results to load
+	await page.waitFor(1000);
+	await page.screenshot({path: currentZipCode+'.png'});
+		// Then we grab the results
+	let result = await page.evaluate(async () => {
+      // Get all categories div
+	  let categories = document.querySelectorAll(".categories");
+	  // Iterate through all categories and add their values to an object
+	  let pointer = 0; 
+	  let data = {}
+	  while (pointer < categories.length) {
+		// Now we have access to two categories
+		let category = categories[pointer];
+		// Making sure we have both a label and a value and category is not null
+		if (category != null && category != undefined && category.children.length > 1) {
+		  let label = ""; 
+		  let value = "";
+		  let percentage = "";
+		  for (var i = 0; i < category.children.length; i++) {
+			let node = category.children[i];
+			// Make sure that the node is either a label or a paragraph, can't rely on indices alone
+			if (node.nodeName.toLowerCase() === 'label') {
+			  label = node.querySelector("span").innerText;
+			}
+			if (node.nodeName.toLowerCase() === 'p') {
+			  value = node.querySelector("span").getAttribute("data-value");
+			  percentage = node.querySelector("span").getAttribute("data-percentage");
+		    }  
+		  }
+		  data[label + " Count"] = value;
+		  data[label + " Percent"] = percentage;
+		}
+		pointer += 1;
+	  }
+	  return data;
+	});
+	// Now we add this zip code's result to the final answer
+	finalData[currentZipCode.toString()] = result;
+  }
+  console.log(JSON.stringify(finalData));
+
+  await page.waitFor(3000); 
+  
+  
+  // await browser.close()
+})() <p>We will need these libraries</p>
+import requestsimport pandas as pdimport mechanicalsoupfrom bs4 import BeautifulSoup# This is the URL Endpoing that has our data: 
+url = 'https://md-dc.211counts.org/dashBoard/barChart'
+# And these are the paramaters that get submitted to the endpoint as a POST request
+myobj = {
+'identifierCategory': '',
+'sourceType': '',
+'fromMobile': False,
+'id': {"ids":[14160]},
+'timeIntervalId': 333,
+'centerId': 43,
+'fromDate': 0,
+'toDate': 0,
+'type': 'Z'
+}<h2>Miner</h2>
+<p>(Works, but html content needs to be scraped seperately, through a same-origin request)</p>
+# Given the 211 html page, will return a div containing data for each record. 
+# This needs additional scraping, but now each record has its respective html is isolated.
+def scrape(html_data):
+    soup = BeautifulSoup(html_data, "html.parser")
+    categories = soup.findAll("div", {"class": "categories"})
+    return categories# This will mine the scraped html pulled from Puppeteer 
+df = pd.DataFrame(data={'zipCodeId': [], 'title': [], 'value': []})
+formValues = htmlText
+# Loop through array of html containing our data
+for x in scrape(formValues):
+  soup = BeautifulSoup(str(x), "html.parser")
+  # get the title and value from the records html
+  title = soup.find("span", {"class": "toolTipSubCategory"})
+  value = soup.find("span", {"data-value": True})
+  # append it to our dataframe if both value and title exit
+  if(str(title) != 'None' and str(value) != 'None' ): 
+    title = title.text
+    value = value['data-value']
+    df = df.append({'zipCodeId': str(14174), 'title': title, 'value': value}, ignore_index=True)dfdf.to_csv('test123.csv', index=False)# A placeholder until we get the puppeteer scraper working. 
+htmlText = ''# Given the 211 html page, will return a div containing data for each record. 
+# This needs additional scraping, but now each record has its respective html is isolated.
+def scrape(html_data):
+    soup = BeautifulSoup(html_data, "html.parser")
+    categories = soup.findAll("div", {"class": "categories"})
+    return categoriesdfdf.to_csv('test123.csv', index=False)<h2>Scraper</h2>
+<p>(Works but doesnt give us what we want)</p>
+<p>Get the page</p>
+browser = mechanicalsoup.StatefulBrowser()
+browser.open("https://md-dc.211counts.org/")
+browser.get_url()<p>Find the form and select our options</p>
+browser.select_form('div[id="search"]')
+browser['chkZ'] = '14160'# browser.get_current_form().print_summary()
+response = browser.submit_selected()<p>Save the output for previewing</p>
+text_file = open("sample.txt", "w")
+n = text_file.write(response.text)
+text_file.close()
+# print(response.text)<p>Unfortunately, this does not work! </p>
+<p>Our data is stored as dynamic content that is not delivered to us here.</p>
+<p>We will need to use Pupeteer to render the dynamic javascript content.</p>
+<p>What a shame...</p>
+<h2>Final Solution (Javascript)</h2>
+<p>This needs to be ran in a seperate js file.</p>
+/*
+ * https://stackoverflow.com/questions/48681145/set-pupeteer-window-size-when-running-not-headless-not-viewport
+https://medium.com/@aslushnikov/automating-clicks-in-chromium-a50e7f01d3fb
+* 
+*/
+const puppeteer = require('puppeteer');
+var zipCodes = { 
+  '21201':11175, 
+  '21202':11176, 
+  '21203':14550, 
+  '21204':11177, 
+  '21205':11178, 
+  '21206':11179, 
+  '21207':11180, 
+  '21208':11181,
+  '21209':11182, 
+  '21210':11183, 
+  '21211':11184, 
+  '21212':11185, 
+  '21213':11373, 
+  '21214':11375, 
+  '21215':11376, 
+  '21216':11377,
+  '21217':11378, 
+  '21218':11379, 
+  '21219':11380, 
+  '21220':11381, 
+  '21221':11382, 
+  '21222':11383, 
+  '21223':11384, 
+  '21224':11385, 
+  '21225':11386, 
+  '21226':11387, 
+  '21227':11388, 
+  '21228':11389, 
+  '21229':11390, 
+  '21230':11391,
+  '21231':11392, 
+};
+let nomatch = [ 
+  '21232', 
+  '14550', 
+  '11177', 
+  '11178', 
+  '11178', 
+  '11189'
+]
+
+var finalData = {};
+(async () => {
+  // Init url to scrape, load browser and page
+  const browser = await puppeteer.launch({
+    headless: false, // The browser is visible
+    ignoreHTTPSErrors: true,
+    args: [`--window-size=1200,1000`] // new option
+  })
+                            
+  const page = await browser.newPage()
+  await page.goto('https://md-dc.211counts.org/')
+  await page.setViewport({ width: 1200, height: 1000 })
+  await page.waitForSelector('#mainContent #identifierCategory')
+  // Click Covid-19 Checkbox
+  await page.click('#mainContent #identifierCategory') 
+  await page.waitForSelector('#mainContent #displayCount')
+  // Click Radio Button
+  await page.click('#mainContent #displayCount')
+  // Click to Expand the Timestamp Dropdown
+  await page.mouse.move(713, 37);
+  await page.mouse.down({button: 'left'});
+  await page.mouse.up({button: 'left'});
+  // Click from the dropdwn '30 Days'
+  await page.mouse.move(688, 194);
+  await page.mouse.down({button: 'left'});
+  await page.mouse.up({button: 'left'}); 
+  // Search for every zip code and add the result to an object
+  for (var j = 0; j < Object.keys(zipCodes).length; j++) {
+	var currentZipCode = Object.keys(zipCodes)[j]
+	var zid = zipCodes[currentZipCode]	 
+	console.log("CurZip: " + currentZipCode, ' ID: ', 'input[value="'+zid+'"]');  
+	await page.evaluate((zc) => {	
+	  // Prepare the zip code checkbox identifier to click on
+	  let reset = 'input[value="RESET"]';
+	  $(reset).click();
+	  let zipCodeCheckBox = 'input[value="' + zc  + '"]';
+	  $(zipCodeCheckBox).click();
+	  // Get search button, click
+      $("#submitSearch").click();
+	}, zid);
+	
+	// And wait for the results to load
+	await page.waitFor(1000);
+	
+	await page.screenshot({path: currentZipCode+'.png'});
+	
+	await page.evaluate((zc) => {
+		// Click on count radio button 
+		let countsBtn = document.getElementById('displayCount');
+		countsBtn.click();
+		// Prepare the zip code checkbox identifier to click on
+		let zipCodeCheckBox = 'input[value="' + zc  + '"]';
+		$(zipCodeCheckBox).click();
+		// Get search button, click
+		$("#submitSearch").click();
+	}, currentZipCode);
+	// And wait for the results to load
+	await page.waitFor(1000);
+	await page.screenshot({path: currentZipCode+'.png'});
+		// Then we grab the results
+	let result = await page.evaluate(async () => {
+      // Get all categories div
+	  let categories = document.querySelectorAll(".categories");
+	  // Iterate through all categories and add their values to an object
+	  let pointer = 0; 
+	  let data = {}
+	  while (pointer < categories.length) {
+		// Now we have access to two categories
+		let category = categories[pointer];
+		// Making sure we have both a label and a value and category is not null
+		if (category != null && category != undefined && category.children.length > 1) {
+		  let label = ""; 
+		  let value = "";
+		  let percentage = "";
+		  for (var i = 0; i < category.children.length; i++) {
+			let node = category.children[i];
+			// Make sure that the node is either a label or a paragraph, can't rely on indices alone
+			if (node.nodeName.toLowerCase() === 'label') {
+			  label = node.querySelector("span").innerText;
+			}
+			if (node.nodeName.toLowerCase() === 'p') {
+			  value = node.querySelector("span").getAttribute("data-value");
+			  percentage = node.querySelector("span").getAttribute("data-percentage");
+		    }  
+		  }
+		  data[label + " Count"] = value;
+		  data[label + " Percent"] = percentage;
+		}
+		pointer += 1;
+	  }
+	  return data;
+	});
+	// Now we add this zip code's result to the final answer
+	finalData[currentZipCode.toString()] = result;
+  }
+  console.log(JSON.stringify(finalData));
+
+  await page.waitFor(3000); 
+  
+  
+  // await browser.close()
+})() 
